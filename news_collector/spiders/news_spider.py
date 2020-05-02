@@ -1,6 +1,5 @@
 import scrapy
 
-
 class NewsSpider(scrapy.Spider):
     name = "news"
 
@@ -29,8 +28,10 @@ class NewsSpider(scrapy.Spider):
             '//div[@class="content "]/section[@class="group"]/article')  # NACHRICHTEN
 
         for article in top_news:
+
             content = article.xpath('.//div[@class="teaser__content"]')
             href = content.css('div.teaser__content a::attr(href)').get()
+
             yield response.follow(href, callback=self.parseArticle)
 
     def parseArticle(self, response):
@@ -57,6 +58,7 @@ class NewsSpider(scrapy.Spider):
                     if not href.endswith(".html"):
                         continue
                     named_references[node.xpath('text()').get()] = href
+
                     yield response.follow(node, callback=self.parseArticle)
                 else:
                     article_text_blocks[block_index].append(
