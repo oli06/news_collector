@@ -15,6 +15,10 @@ SPIDER_MODULES = ['news_collector.spiders']
 NEWSPIDER_MODULE = 'news_collector.spiders'
 FEED_EXPORT_ENCODING = 'utf-8'
 
+MONGODB_SERVER = "localhost"
+MONGODB_PORT = 27017
+MONGODB_DB = "news"
+MONGODB_COLLECTION = "articles"
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'news_collector (+http://www.yourdomain.com)'
@@ -65,9 +69,9 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'news_collector.pipelines.NewsCollectorPipeline': 300,
-#}
+ITEM_PIPELINES = {
+    'news_collector.pipelines.NewsCollectorPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html

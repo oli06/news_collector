@@ -9,6 +9,16 @@ import scrapy
 
 
 class NewsCollectorItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
     pass
+    category = scrapy.Field()
+    url = scrapy.Field()
+    teaser = scrapy.Field()
+    date = scrapy.Field()
+    author = scrapy.Field()
+    is_update = scrapy.Field()
+    kicker = scrapy.Field()
+    headline = scrapy.Field()
+    named_references = scrapy.Field()
+    text_segments = scrapy.Field()
+    tags = scrapy.Field()
+    
