@@ -9,16 +9,20 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 try:
     output_filename = "out.json"
-    subprocess.check_call(['rm', output_filename])
-    #execute(["rm", output_filename] )
+    #subprocess.check_call(['rm', output_filename])
+    execute(["rm", output_filename] )
     execute(
         [
             'scrapy',
             'crawl',
-            'news',
+            'spiegel',
             "-t", "json",
             '-o',
-            output_filename
+            output_filename,
+            '--logfile',
+            'spiegel.log',
+            '--loglevel',
+            'WARNING'
         ]
     )
 except SystemExit:

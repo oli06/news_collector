@@ -20,6 +20,10 @@ MONGODB_PORT = 27017
 MONGODB_DB = "news"
 MONGODB_COLLECTION = "articles"
 
+
+DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
+
+
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'news_collector (+http://www.yourdomain.com)'
 
