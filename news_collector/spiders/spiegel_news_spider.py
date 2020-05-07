@@ -17,7 +17,7 @@ class SpiegelNewsSpider(scrapy.Spider):
         level=logging.INFO
     )
 
-    def start_requests2(self):
+    def start_requests(self):
         allowed_domains = ['www.spiegel.de/']
         urls = [
             "https://www.spiegel.de/"
@@ -25,7 +25,7 @@ class SpiegelNewsSpider(scrapy.Spider):
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
-    def start_requests(self):
+    def start_requests2(self):
         allowed_domains = ['www.spiegel.de/']
         urls = [
             # 'https://www.spiegel.de/politik/deutschland/corona-und-die-gesellschaft-zersplitterte-normalitaet-a-0efb9a97-7cbb-442e-b25e-fdaa95bf7874'
@@ -33,10 +33,6 @@ class SpiegelNewsSpider(scrapy.Spider):
             # noch zu testen:
             # 'https://www.spiegel.de/politik/ausland/oesterreich-sebastian-kurz-regiert-mit-den-gruenen-in-wien-a-1303414.html' #fix :text... doesnt recognize <ul> <li>..</li></ul> as text...
 
-            'https://www.spiegel.de/wissenschaft/medizin/coronavirus-wann-haben-wir-das-schlimmste-hinter-uns-a-25a43e7d-358d-4296-aa8a-c079a3abcde8'
-            # 'https://www.spiegel.de/politik/ausland/coronavirus-geheimdienste-halten-laborunfall-in-wuhan-fuer-hoechst-unwahrscheinlich-a-41738c81-d50b-449d-8d07-6be135f0455c'
-            #'https://www.spiegel.de/politik/ausland/freie-syrische-armee-der-hass-der-grenzkrieger-a-815690.html'
-            # 'https://www.spiegel.de/politik/deutschland/corona-krise-und-deutsche-parteien-der-kampf-um-die-normalitaet-a-ac0b9e67-92d1-4e3b-9a5d-b0220d3e3983'
             # 'https://www.spiegel.de/politik/deutschland/gruene-fdp-linke-afd-waehrend-der-corona-krise-eben-nicht-nur-opposition-a-9aa13aef-253a-46b9-a0dc-1430f8232c3e'
         ]
 
@@ -76,10 +72,12 @@ class SpiegelNewsSpider(scrapy.Spider):
         article_item['author'] = [a.strip('\n').lower() for a in article.xpath('//header/div/div/div[2]/a/text()').extract()]
         article_item['agency'] = 'spiegel'
         # teaser could be empty
-        article_item['teaser'] = article.css('header div div div.RichText::text').get().strip('\n').lower() if article.css('header div div div.RichText::text').get() is not None else ''
+        article_item['teaser'] = article.css('header div div div.RichText::text').get().strip('\n').lower() if article.css('header div div div.RichText::text').get() is not None else '__unknown__'
         # sometimes kicker is inside h1, but mostly inside h2
-        article_item['kicker'] = article.xpath('//header/div/div/*[self::h1 or self::h2]/span[1]/text()').get().strip('\n').lower()
-        article_item['headline'] = article.xpath('//header/div/div/*[self::h1 or self::h2]/span[2]/span/text()').get().strip('\n').lower()
+        # sometimes only one div is used for the kicker: https://www.spiegel.de/gesundheit/diagnose/coronavirus-kinder-nicht-mehr-zu-oma-und-opa-bringen-wie-schuetze-ich-gefaehrdete-personen-a-57989487-5608-4a4d-ac40-52d01ffe0233
+        article_item['kicker'] = article.xpath('//header/div/div/*[self::h1 or self::h2]/span[1]/text()').get().strip('\n').lower() if article.xpath('//header/div/div/*[self::h1 or self::h2]/span[1]/text()').get() is not None else '__unknown__'
+        #see kicker (only one div instead of two)
+        article_item['headline'] = article.xpath('//header/div/div/*[self::h1 or self::h2]/span[2]/span/text()').get().strip('\n').lower() if article.xpath('//header/div/div/*[self::h1 or self::h2]/span[2]/span/text()').get() is not None else '__unknown__'
         article_item['named_references'] = {}
         article_item['text'] = ""
         article_item['category'] = category
