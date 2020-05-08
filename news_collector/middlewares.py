@@ -79,6 +79,14 @@ class NewsCollectorDownloaderMiddleware(object):
         return s
 
     def process_request(self, request, spider):
+        url = request.url
+        
+        #db check
+        if self.db.news.articles.find({"url": url}).count(with_limit_and_skip=True) == 1:
+            #logging.debug('entry exists in DB')
+            raise IgnoreRequest()
+
+        return None #everything is fine
         # Called for each request that goes through the downloader
         # middleware.
 
@@ -115,13 +123,3 @@ class NewsCollectorDownloaderMiddleware(object):
 
     def spider_closed(self, spider):
         self.db.close()
-
-    def process_request(self, request, spider):
-        url = request.url
-        
-        #db check
-        if self.db.news.articles.find({"url": url}).count(with_limit_and_skip=True) == 1:
-            #logging.debug('entry exists in DB')
-            return IgnoreRequest()
-
-        return None #everything is fine
