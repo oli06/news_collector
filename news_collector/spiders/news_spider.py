@@ -70,12 +70,12 @@ class NewsSpider(scrapy.Spider):
         article_item['url'] = url
         article_item['agency'] = 'n-tv'
         # n-tv interviews use <em> tags for the teaser instead of bold tags. And sometimes there is even no (!) teaser... -> https://www.n-tv.de/wissen/Die-Eisheiligen-kommen-zu-fuenft-article21759625.html
-        article_item['teaser'] = text[0].css("p strong::text").get().strip().lower() if text[0].css("p strong::text").get() is not None else text[0].css("p em::text").get().strip().lower() if text[0].css('p em::text').get() is not None else ''
+        article_item['teaser'] = text[0].css("p strong::text").get().strip('\n') if text[0].css("p strong::text").get() is not None else text[0].css("p em::text").get().strip('\n') if text[0].css('p em::text').get() is not None else ''
         article_item['is_update'] = True if header.css(
                 'span.article__kicker span:nth-child(1)::text').get() == "Update" else False # does not work
-        article_item['kicker'] = header.css('span.article__kicker::text').get().strip().lower()
-        article_item['headline'] = header.css('span.article__headline::text').get().lower()
-        article_item['category'] = article.css('span.title::text').get().lower()
+        article_item['kicker'] = header.css('span.article__kicker::text').get().strip('\n')
+        article_item['headline'] = header.css('span.article__headline::text').get().strip('\n')
+        article_item['category'] = article.css('span.title::text').get()
         # old articles dont have tags
         article_item['tags'] = article_wrapper.css(
                 'section.article__tags ul li a::text').getall() if article_wrapper.css('section.article__tags ul li a::text') is not None else []  
@@ -92,14 +92,14 @@ class NewsSpider(scrapy.Spider):
                     href = node.xpath('@href').get()
                     if not href.endswith(".html"):
                         continue
-                    article_item['named_references'][node.xpath('text()').get().strip('\n').replace('.', '%2E').lower() if node.xpath('text()').get(
+                    article_item['named_references'][node.xpath('text()').get().strip('\n').replace('.', '%2E') if node.xpath('text()').get(
                     ) is not None else 'unknown_' + href.replace('.', '%2E')] = href  # dot´s are not allowed in mongodb key names
                     # sometimes there are hidden hyperlinks without any text
 
                     yield response.follow(node, callback=self.parseArticle)
                 else:
                     article_item['article_text_blocks'][block_index].append(
-                        node.get().strip().lower())
+                        node.get().strip())
 
             block_index += 1
 
@@ -114,7 +114,7 @@ class NewsSpider(scrapy.Spider):
 
         for a in authors:
             # e.g. "Von Max Maier und Sabine Braun" -> ["Max Maier", "Sabine Braun"]
-            a_copy = a.lower()
+            a_copy = a
             if a_copy.startswith('von'):
                 a_copy = a_copy[3:].strip()
 

@@ -4,6 +4,8 @@ from scrapy.utils.log import configure_logging
 from scrapy import Item, Field
 import datetime 
 from news_collector.items import NewsCollectorItem
+from scrapy.mail import MailSender
+
 
 class SpiegelNewsSpider(scrapy.Spider):
     name = "spiegel"
@@ -54,7 +56,7 @@ class SpiegelNewsSpider(scrapy.Spider):
         if not self.isAccessible(response, url):
             return
 
-        category = url.split('/')[3].lower() # bad style...
+        category = url.split('/')[3] # bad style...
 
         if category == 'video':
             logging.debug(f'not parsing, video: {url}')
@@ -69,15 +71,15 @@ class SpiegelNewsSpider(scrapy.Spider):
         article_item = NewsCollectorItem()
         article_item['date'] = article.css('header time.timeformat::attr(datetime)').get()
         article_item['url'] = url
-        article_item['author'] = [a.strip('\n').lower() for a in article.xpath('//header/div/div/div[2]/a/text()').extract()]
+        article_item['author'] = [a.strip('\n') for a in article.xpath('//header/div/div/div[2]/a/text()').extract()]
         article_item['agency'] = 'spiegel'
         # teaser could be empty
-        article_item['teaser'] = article.css('header div div div.RichText::text').get().strip('\n').lower() if article.css('header div div div.RichText::text').get() is not None else '__unknown__'
+        article_item['teaser'] = article.css('header div div div.RichText::text').get().strip('\n') if article.css('header div div div.RichText::text').get() is not None else '__unknown__'
         # sometimes kicker is inside h1, but mostly inside h2
         # sometimes only one div is used for the kicker: https://www.spiegel.de/gesundheit/diagnose/coronavirus-kinder-nicht-mehr-zu-oma-und-opa-bringen-wie-schuetze-ich-gefaehrdete-personen-a-57989487-5608-4a4d-ac40-52d01ffe0233
-        article_item['kicker'] = article.xpath('//header/div/div/*[self::h1 or self::h2]/span[1]/text()').get().strip('\n').lower() if article.xpath('//header/div/div/*[self::h1 or self::h2]/span[1]/text()').get() is not None else '__unknown__'
+        article_item['kicker'] = article.xpath('//header/div/div/*[self::h1 or self::h2]/span[1]/text()').get().strip('\n') if article.xpath('//header/div/div/*[self::h1 or self::h2]/span[1]/text()').get() is not None else '__unknown__'
         #see kicker (only one div instead of two)
-        article_item['headline'] = article.xpath('//header/div/div/*[self::h1 or self::h2]/span[2]/span/text()').get().strip('\n').lower() if article.xpath('//header/div/div/*[self::h1 or self::h2]/span[2]/span/text()').get() is not None else '__unknown__'
+        article_item['headline'] = article.xpath('//header/div/div/*[self::h1 or self::h2]/span[2]/span/text()').get().strip('\n') if article.xpath('//header/div/div/*[self::h1 or self::h2]/span[2]/span/text()').get() is not None else '__unknown__'
         article_item['named_references'] = {}
         article_item['text'] = ""
         article_item['category'] = category
@@ -88,7 +90,7 @@ class SpiegelNewsSpider(scrapy.Spider):
             content = div.css('::text')
             links = div.css('a')
             for c in content:
-                c = c.get().strip('\n').lower()
+                c = c.get().strip('\n')
 
                 if c is not '' and c != 'icon: der spiegel':  # spiegel texts end with S - icon
                     article_item['text'] += c
@@ -98,7 +100,7 @@ class SpiegelNewsSpider(scrapy.Spider):
                 # dot´s are not allowed in mongodb key names
                 # sometimes there are hidden hyperlinks without any text
                 article_item['named_references'][l.css('::text').get().strip('\n').replace(
-                    '.', '%2E').lower() if l.css('::text').get() is not None else f'unknown_{href.replace(".", "%2E")}'] = href
+                    '.', '%2E') if l.css('::text').get() is not None else f'unknown_{href.replace(".", "%2E")}'] = href
 
 
         for x in article_item['named_references']:
