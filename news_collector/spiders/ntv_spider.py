@@ -4,7 +4,7 @@ from scrapy.utils.log import configure_logging
 import datetime
 from news_collector.items import NewsCollectorItem
 
-class NewsSpider(scrapy.Spider):
+class NtvSpider(scrapy.Spider):
     name = "n-tv"
     total_parsed = 0
     urls_parsed = []

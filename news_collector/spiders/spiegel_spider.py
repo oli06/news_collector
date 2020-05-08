@@ -7,7 +7,7 @@ from news_collector.items import NewsCollectorItem
 from scrapy.mail import MailSender
 
 
-class SpiegelNewsSpider(scrapy.Spider):
+class SpiegelSpider(scrapy.Spider):
     name = "spiegel"
     total_parsed = 0
     urls_parsed = []
