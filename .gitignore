@@ -21,5 +21,6 @@ htmlcov/
 Thumbs.db
 
 #added
-.log
+*.log
 out.json
+
