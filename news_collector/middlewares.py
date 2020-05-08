@@ -6,7 +6,9 @@
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-
+from pydispatch import dispatcher
+from pymongo import MongoClient
+from scrapy.exceptions import IgnoreRequest
 
 class NewsCollectorSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -56,10 +58,18 @@ class NewsCollectorSpiderMiddleware(object):
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
+
+
 class NewsCollectorDownloaderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
+
+    def __init__(self):
+        self.db = MongoClient()
+        #self.urls = self.db.news.articles.find({ "agency": "n-tv" })
+        dispatcher.connect(self.spider_closed, signals.spider_closed)
+
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -101,3 +111,14 @@ class NewsCollectorDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+    def spider_closed(self, spider):
+        self.db.close()
+
+    def process_request(self, request, spider):
+        url = request.url
+        #db check
+        if self.db.news.articles.find({"url": url}).count(with_limit_and_skip=True) == 1:
+            #logging.debug('entry exists in DB')
+            return IgnoreRequest()

@@ -55,15 +55,15 @@ ROBOTSTXT_OBEY = True
 
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'news_collector.middlewares.NewsCollectorSpiderMiddleware': 543,
-#}
+SPIDER_MIDDLEWARES = {
+    'news_collector.middlewares.NewsCollectorSpiderMiddleware': 543,
+}
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'news_collector.middlewares.NewsCollectorDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+    'news_collector.middlewares.NewsCollectorDownloaderMiddleware': 543,
+}
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
