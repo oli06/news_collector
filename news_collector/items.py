@@ -22,10 +22,3 @@ class NewsCollectorItem(scrapy.Item):
     text = scrapy.Field()
     tags = scrapy.Field() #list: ntv uses tags to describe the content of an article
     category = scrapy.Field() #politics, sports, economy, etc 
-    
-#TODOS
-#2. use item
-#3. fix spiegel.de
-#4. activate spiegel.de
-#5. use mongodb to fetch existing articles
-#6. ntv https://www.n-tv.de/panorama/Das-sind-die-aktuellen-Corona-Regeln-article21752379.html text blocks wont be recognized (aufzählung) --> fix 

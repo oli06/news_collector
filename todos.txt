@@ -1,0 +1,5 @@
+#TODOS
+#5. use mongodb to fetch existing articles
+#6. ntv https://www.n-tv.de/panorama/Das-sind-die-aktuellen-Corona-Regeln-article21752379.html text blocks wont be recognized (aufzählung) --> fix 
+#7. ntv use text instead of text blocks
+#8. send emails
