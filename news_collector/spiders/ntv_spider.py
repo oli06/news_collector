@@ -25,7 +25,6 @@ class NtvSpider(scrapy.Spider):
 
     def start_requests2(self):
         urls = [
-            # 'https://www.n-tv.de/politik/Sachsen-Anhalt-lockert-Kontaktbeschraenkungen-article21754435.html'
             'https://www.n-tv.de/ratgeber/Freiwillige-Beitraege-fuer-die-Rente-article17244951.html'
         ]
 
@@ -80,12 +79,11 @@ class NtvSpider(scrapy.Spider):
         article_item['tags'] = article_wrapper.css(
                 'section.article__tags ul li a::text').getall() if article_wrapper.css('section.article__tags ul li a::text') is not None else []  
         article_item['named_references'] = {}
-        article_item['article_text_blocks'] = []
+        article_item['text'] = ""
 
-        block_index = 0
-        for t in text[1:]:  # the first paragraph is normally the teaser_text
+        for t in text[1:]:  # the first paragraph is the teaser
             nodes = t.xpath('.//node()')
-            article_item['article_text_blocks'].append([])
+            article_item['text'] += " " #space between every paragraph
             for node in nodes:
                 if node.xpath('name()').get() == 'a':
                     # save reference link in named_references and dont save the link to the text blocks
@@ -98,10 +96,10 @@ class NtvSpider(scrapy.Spider):
 
                     yield response.follow(node, callback=self.parseArticle)
                 else:
-                    article_item['article_text_blocks'][block_index].append(
-                        node.get().strip())
 
-            block_index += 1
+                    article_item['text'] += node.get().strip("\n")
+
+        article_item['text'] = article_item['text'].strip()
 
         authors = header.css(
             'span.article__author::text').getall()
@@ -123,7 +121,6 @@ class NtvSpider(scrapy.Spider):
             authors.remove(a)
 
         article_item['author'] = authors
-
         yield article_item
 
 
