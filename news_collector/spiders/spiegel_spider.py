@@ -5,7 +5,8 @@ from scrapy import Item, Field
 import datetime 
 from news_collector.items import NewsCollectorItem
 from scrapy.mail import MailSender
-
+from scrapy import signals
+from pydispatch import dispatcher
 
 class SpiegelSpider(scrapy.Spider):
     name = "spiegel"
@@ -18,6 +19,12 @@ class SpiegelSpider(scrapy.Spider):
         format='%(levelname)s: %(message)s',
         level=logging.INFO
     )
+
+    def __init__(self):
+        dispatcher.connect(self.spider_closed, signals.spider_closed)
+
+    def spider_closed(self, spider):
+        logging.info(f'total parsed: {self.total_parsed}')
 
     def start_requests(self):
         allowed_domains = ['www.spiegel.de/']
