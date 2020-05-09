@@ -14,7 +14,7 @@ class SpiegelSpider(scrapy.Spider):
 
     configure_logging(install_root_handler=False)
     logging.basicConfig(
-        filename=f'spiegel_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
+        filename=f'{name}_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
         format='%(levelname)s: %(message)s',
         level=logging.INFO
     )
@@ -30,12 +30,10 @@ class SpiegelSpider(scrapy.Spider):
     def start_requests2(self):
         allowed_domains = ['www.spiegel.de/']
         urls = [
-            # 'https://www.spiegel.de/politik/deutschland/corona-und-die-gesellschaft-zersplitterte-normalitaet-a-0efb9a97-7cbb-442e-b25e-fdaa95bf7874'
+            #'https://www.spiegel.de/politik/deutschland/corona-und-die-gesellschaft-zersplitterte-normalitaet-a-0efb9a97-7cbb-442e-b25e-fdaa95bf7874'
 
-            # noch zu testen:
-            # 'https://www.spiegel.de/politik/ausland/oesterreich-sebastian-kurz-regiert-mit-den-gruenen-in-wien-a-1303414.html' #fix :text... doesnt recognize <ul> <li>..</li></ul> as text...
-
-            # 'https://www.spiegel.de/politik/deutschland/gruene-fdp-linke-afd-waehrend-der-corona-krise-eben-nicht-nur-opposition-a-9aa13aef-253a-46b9-a0dc-1430f8232c3e'
+            # noch zu testen: (siehe todos)
+            # 'https://www.spiegel.de/politik/ausland/oesterreich-sebastian-kurz-regiert-mit-den-gruenen-in-wien-a-1303414.html'
         ]
 
         for url in urls:
@@ -72,7 +70,7 @@ class SpiegelSpider(scrapy.Spider):
         article_item['date'] = article.css('header time.timeformat::attr(datetime)').get()
         article_item['url'] = url
         article_item['author'] = [a.strip('\n') for a in article.xpath('//header/div/div/div[2]/a/text()').extract()]
-        article_item['agency'] = 'spiegel'
+        article_item['agency'] = self.name
         # teaser could be empty
         article_item['teaser'] = article.css('header div div div.RichText::text').get().strip('\n') if article.css('header div div div.RichText::text').get() is not None else '__unknown__'
         # sometimes kicker is inside h1, but mostly inside h2

@@ -11,7 +11,7 @@ class NtvSpider(scrapy.Spider):
 
     configure_logging(install_root_handler=False)
     logging.basicConfig(
-        filename=f'n-tv_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
+        filename=f'{name}_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
         format='%(levelname)s: %(message)s',
         level=logging.INFO
     )
@@ -67,7 +67,7 @@ class NtvSpider(scrapy.Spider):
         article_item = NewsCollectorItem()
         article_item['date'] = header.css('span.article__date::text').get()
         article_item['url'] = url
-        article_item['agency'] = 'n-tv'
+        article_item['agency'] = self.name
         # n-tv interviews use <em> tags for the teaser instead of bold tags. And sometimes there is even no (!) teaser... -> https://www.n-tv.de/wissen/Die-Eisheiligen-kommen-zu-fuenft-article21759625.html
         article_item['teaser'] = text[0].css("p strong::text").get().strip('\n') if text[0].css("p strong::text").get() is not None else text[0].css("p em::text").get().strip('\n') if text[0].css('p em::text').get() is not None else ''
         article_item['is_update'] = True if header.css(
