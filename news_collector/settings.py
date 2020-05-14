@@ -25,7 +25,7 @@ DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'news_collector (+http://www.yourdomain.com)'
+USER_AGENT = 'Googlebot-News' #works for zeit.de
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
