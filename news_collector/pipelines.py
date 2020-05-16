@@ -37,6 +37,14 @@ class NewsCollectorPipeline(object):
         if exists:
             return item
 
+        valid = True
+
+        if item['headline'] == '' or item['text'] == '' or item['url'] == '' or item['date'] == '':
+            valid = False
+
+        if not valid:
+            return item
+            
         metadata = {'raw': item.pop('raw'), 'url': item['url']}    
         _id = self.db[self.mongo_collection].insert_one(dict(item))
         metadata['ref_id'] = _id.inserted_id
