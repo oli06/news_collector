@@ -35,8 +35,8 @@ class ZeitSpider(scrapy.Spider):
 
     def start_requests2(self):
         urls = [
-            # 'https://www.zeit.de/wissen/gesundheit/coronavirus-echtzeit-karte-deutschland-landkreise-infektionen-ausbreitung'
-            #'https://www.zeit.de/sport/2020-05/bundesliga-start-fussball-spiele-coronavirus-manager-fans' # pagination test
+            #'https://www.zeit.de/wissen/gesundheit/coronavirus-echtzeit-karte-deutschland-landkreise-infektionen-ausbreitung'
+            'https://www.zeit.de/sport/2020-05/bundesliga-start-fussball-spiele-coronavirus-manager-fans' # pagination test
         
         ]
         allowed_domains = [
@@ -66,7 +66,6 @@ class ZeitSpider(scrapy.Spider):
         self.total_parsed += 1
         logging.debug(f"{self.total_parsed}. {url}")
 
-        body = article.css('div.article-body')
         footer = article.css('div.article-footer')
 
         # create item and add values
@@ -82,16 +81,55 @@ class ZeitSpider(scrapy.Spider):
         article_item['agency'] = self.name
         article_item['category'] = category
         article_item['authors'] = []
-
-        # select all elements without class="ad-container"
-        text = body.xpath(
-            './div[@class="article-page"]/*[not(@class="ad-container")]')
         article_item['named_references'] = {}
         article_item['text'] = ""
 
+        authors = article.css(
+            'div.article__item div.byline span a span::text')  # what if there are two authors?
+        for a in authors:
+            article_item['authors'].append(a.get().strip('\n'))
+
+        extract_text_request = scrapy.Request(url, callback=self.pagination)
+        extract_text_request.meta['article'] = article_item
+        yield extract_text_request
+
+    def pagination(self, response):
+        article_item = response.meta['article']
+
+        body = response.css('article.article div.article-body')
+
+        text, named_ref = self.extract_text_and_named_references(body)
+        if article_item['text'] == '':
+            article_item['text'] = text
+            article_item['named_references'] = named_ref
+        else:
+            article_item['text'] += text
+            article_item['named_references'].update(named_ref)
+        
+        #get next page
+        next_page = body.css('nav.article-pagination a.article-pagination__link::attr(href)').get()
+        if next_page is None or next_page == 'https://www.zeit.de/index' or next_page == '': #next page does not exist
+            print('last page')
+            for x in article_item['named_references']:
+                ref_url = article_item['named_references'][x]
+                yield response.follow(article_item['named_references'][x], callback=self.parseArticle)
+            yield article_item
+        else:
+            print('else')
+            next_page_request = scrapy.Request(next_page, callback=self.pagination)
+            next_page_request.meta['article'] = article_item
+            yield next_page_request
+            print("reaching?")
+
+    def extract_text_and_named_references(self, body_selector):
+        #select all elements without class="ad-container"
+        article_text = ""
+        named_references = {}
+        text = body_selector.xpath('./div[@class="article-page"]/*[not(@class="ad-container")]')
+    
         for t in text:  # the first paragraph is the teaser
             nodes = t.xpath('.//node()')
-            article_item['text'] += " "  # space between every paragraph
+            article_text += " "  # space between every paragraph
             t_name = t.xpath('name()').get()
             if t_name is not 'p' and t_name is not 'h1' and t_name is not 'h2':
                 # there are other tags the crawler cant process: div, aside, script
@@ -103,28 +141,16 @@ class ZeitSpider(scrapy.Spider):
                 if node_name == 'a':
                     # save reference link in named_references and dont save the link to the text blocks
                     href = node.xpath('@href').get()
-                    article_item['named_references'][node.xpath('text()').get().strip('\n').replace('.', '%2E') if node.xpath('text()').get(
-                    ) is not None else 'unknown_' + href.replace('.', '%2E')] = href  # dot´s are not allowed in mongodb key names
+                    # dot´s are not allowed in mongodb key names
                     # sometimes there are hidden hyperlinks without any text
+                    named_references[node.xpath('text()').get().strip('\n').replace('.', '%2E') if node.xpath('text()').get() is not None else 'unknown_' + href.replace('.', '%2E')] = href  
                 elif node_text is not None:  # spans (used for a tags text)
                     continue
                 else:  # if ::text is None, it is already pure text
-                    article_item['text'] += node.get().strip("\n").strip('<br>')
+                    article_text += node.get().strip("\n").strip('<br>')
 
-        article_item['text'] = article_item['text'].strip()
+        return article_text, named_references
 
-        for x in article_item['named_references']:
-            ref_url = article_item['named_references'][x]
-
-            yield response.follow(article_item['named_references'][x], callback=self.parseArticle)
-
-        # TODO auswerten
-        authors = article.css(
-            'div.article__item div.byline span a span::text')  # what if there are two authors?
-        for a in authors:
-            article_item['authors'].append(a.get().strip('\n'))
-
-        yield article_item
 
     def isAccessible(self, response, url):
         if self.total_parsed >= 150:
@@ -162,4 +188,3 @@ class ZeitSpider(scrapy.Spider):
             self.urls_parsed.append(url)
 
         return True
-        
