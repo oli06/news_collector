@@ -34,7 +34,8 @@ class NtvSpider(scrapy.Spider):
 
     def start_requests2(self):
         urls = [
-            'https://www.n-tv.de/ratgeber/Freiwillige-Beitraege-fuer-die-Rente-article17244951.html'
+            #'https://www.n-tv.de/ratgeber/Freiwillige-Beitraege-fuer-die-Rente-article17244951.html'
+            'https://www.n-tv.de/sport/fussball/Der-Anpfiff-Die-Angst-article21780164.html'
         ]
 
         for url in urls:
@@ -123,7 +124,7 @@ class NtvSpider(scrapy.Spider):
         for a in authors:
             # e.g. "Von Max Maier und Sabine Braun" -> ["Max Maier", "Sabine Braun"]
             a_copy = a
-            if a_copy.startswith('von'):
+            if a_copy.startswith('von') or a_copy.startswith('Von'):
                 a_copy = a_copy[3:].strip()
 
             author_names = [a.strip() for a in a_copy.split('und')]
