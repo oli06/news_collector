@@ -74,6 +74,7 @@ class SpiegelSpider(scrapy.Spider):
 
         #create item and add values
         article_item = NewsCollectorItem()
+        article_item['raw'] = response.body.decode('utf-8')
         article_item['date'] = article.css('header time.timeformat::attr(datetime)').get()
         article_item['url'] = url
         article_item['authors'] = [a.strip('\n') for a in article.xpath('//header/div/div/div[2]/a/text()').extract()]

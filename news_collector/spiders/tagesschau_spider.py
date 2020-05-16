@@ -27,7 +27,6 @@ class TagesschauSpider(scrapy.Spider):
     def spider_closed(self, spider):
         logging.info(f'total parsed: {self.total_parsed}')
         
-
     def start_requests(self):
         urls = [
             "https://www.tagesschau.de/"
@@ -47,9 +46,6 @@ class TagesschauSpider(scrapy.Spider):
         for section in response.css('div.sectionA'): #first article is tagesthemen video
             for a in section.css('div.con div.modCon div.modA div.boxCon div.box div.teaser div.mediaCon a.mediaLink'):
                 yield response.follow(a, callback=self.parseArticle)
-                
-        
-            
 
     def parseArticle(self, response):
         url = response.request.url
@@ -72,6 +68,7 @@ class TagesschauSpider(scrapy.Spider):
 
         #create item and add values
         article_item = NewsCollectorItem()
+        article_item['raw'] = response.body.decode('utf-8')
         article_item['headline'] = header.css('div.meldungHead span.headline::text').get().strip('\n').strip()
         article_item['kicker'] = header.css('div.meldungHead span.dachzeile::text').get().strip('\n').strip()
         article_item['date'] = header.css('div.meldungHead p.text span.stand::text').get().strip('\n').replace('Stand:', '').strip()

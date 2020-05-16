@@ -74,6 +74,7 @@ class NtvSpider(scrapy.Spider):
 
         #create item and add values
         article_item = NewsCollectorItem()
+        article_item['raw'] = response.body.decode('utf-8')
         article_item['date'] = header.css('span.article__date::text').get()
         article_item['url'] = url
         article_item['agency'] = self.name

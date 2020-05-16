@@ -36,10 +36,10 @@ class NewsCollectorPipeline(object):
         exists = self.db[self.mongo_collection].find({ 'url': item['url'] }).count()
         if exists:
             return item
-            
-        valid = True
 
-        if valid:
-            self.db[self.mongo_collection].insert_one(dict(item))
+        metadata = {'raw': item.pop('raw'), 'url': item['url']}    
+        _id = self.db[self.mongo_collection].insert_one(dict(item))
+        metadata['ref_id'] = _id.inserted_id
+        self.db['metadata'].insert_one(dict(metadata))
 
         return item

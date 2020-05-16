@@ -22,3 +22,4 @@ class NewsCollectorItem(scrapy.Item):
     text = scrapy.Field()
     tags = scrapy.Field() #list: ntv uses tags to describe the content of an article
     category = scrapy.Field() #politics, sports, economy, etc 
+    raw = scrapy.Field() #raw html data of webpage
