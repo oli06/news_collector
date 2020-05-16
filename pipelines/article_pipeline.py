@@ -22,10 +22,13 @@ class ArticlePipeline(object):
                     raise NotImplementedError('ArticlePipeline, no date-formatter implemented')
 
                 item[attr] = date.timestamp()
-            elif attr == 'is_update':
-                item[attr] = 1 if item[attr] else 0
+            elif attr == 'authors':
+                for a in item[attr]:
+                    #TODO: use regex
+                    if a.startswith('Von ') or a.startswith('von ') or a.startswith('und ') or a.startswith('Und '):
+                        a = a[4:]
             elif attr == 'raw':
-                pass
+                pass #dont do anything
             elif type(item[attr]) == type(''):
                 item[attr] = item[attr].strip().strip('\n').strip()
 

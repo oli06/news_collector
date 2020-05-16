@@ -82,8 +82,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'news_collector.pipelines.ArticlePipeline': 1,
-    'news_collector.pipelines.NewsCollectorPipeline': 2,
+    'pipelines.article_pipeline.ArticlePipeline': 1,
+    'pipelines.mongodb_pipeline.MongoDbPipeline': 2,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

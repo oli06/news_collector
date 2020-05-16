@@ -9,7 +9,7 @@
 from pymongo import MongoClient
 
 
-class NewsCollectorPipeline(object):
+class MongoDbPipeline(object):
     def __init__(self, mongo_server, mongo_port, mongo_db, mongo_collection):
         self.mongo_server = mongo_server
         self.mongo_port = mongo_port
@@ -44,7 +44,7 @@ class NewsCollectorPipeline(object):
 
         if not valid:
             return item
-            
+
         metadata = {'raw': item.pop('raw'), 'url': item['url']}    
         _id = self.db[self.mongo_collection].insert_one(dict(item))
         metadata['ref_id'] = _id.inserted_id
