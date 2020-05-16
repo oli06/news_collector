@@ -89,7 +89,7 @@ class NewsCollectorDownloaderMiddleware(object):
     #          raise IgnoreRequest()
             return None #everything is fine
      
-        return IgnoreRequest()
+        raise IgnoreRequest()
         # Called for each request that goes through the downloader
         # middleware.
 
