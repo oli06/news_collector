@@ -76,17 +76,20 @@ class NewsCollectorDownloaderMiddleware(object):
         # This method is used by Scrapy to create your spiders.
         s = cls()
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
+        cls.whitelist = crawler.settings['WHITELIST']
         return s
 
     def process_request(self, request, spider):
         url = request.url
-        
-        #db check
-        if self.db.news.articles.find({"url": url}).count(with_limit_and_skip=True) == 1:
-            #logging.debug('entry exists in DB')
-            raise IgnoreRequest()
-
-        return None #everything is fine
+        tl_domain = '/'.join(url.split('/')[:3])
+        if tl_domain in self.whitelist:
+            #db check
+    #       if self.db.news.articles.find({"url": url}).count(with_limit_and_skip=True) == 1:
+                #logging.debug('entry exists in DB')
+    #          raise IgnoreRequest()
+            return None #everything is fine
+     
+        return IgnoreRequest()
         # Called for each request that goes through the downloader
         # middleware.
 
@@ -96,7 +99,6 @@ class NewsCollectorDownloaderMiddleware(object):
         # - or return a Request object
         # - or raise IgnoreRequest: process_exception() methods of
         #   installed downloader middleware will be called
-        return None
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.

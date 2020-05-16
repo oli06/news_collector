@@ -20,6 +20,14 @@ MONGODB_PORT = 27017
 MONGODB_DB = "news"
 MONGODB_COLLECTION = "articles"
 
+#defines all  news pages that can currently be processed
+#dont add '/' at the end
+WHITELIST = [
+    'https://www.n-tv.de',
+    'https://www.spiegel.de',
+    'https://www.tagesschau.de',
+    'https://www.zeit.de'
+]
 
 DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
 
