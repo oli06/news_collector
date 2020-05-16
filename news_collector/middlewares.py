@@ -81,12 +81,15 @@ class NewsCollectorDownloaderMiddleware(object):
 
     def process_request(self, request, spider):
         url = request.url
+
+        #TODO regex for file names
+        if url.endswith('.pdf') or url.endswith('.png'):
+            raise IgnoreRequest()
+
         tl_domain = '/'.join(url.split('/')[:3])
         if tl_domain in self.whitelist:
-            #db check
-    #       if self.db.news.articles.find({"url": url}).count(with_limit_and_skip=True) == 1:
-                #logging.debug('entry exists in DB')
-    #          raise IgnoreRequest()
+            if self.db.news.articles.find({"url": url}).count(with_limit_and_skip=True) == 1:
+                raise IgnoreRequest()
             return None #everything is fine
      
         raise IgnoreRequest()
