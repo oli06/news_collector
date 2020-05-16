@@ -76,7 +76,7 @@ class SpiegelSpider(scrapy.Spider):
         article_item = NewsCollectorItem()
         article_item['date'] = article.css('header time.timeformat::attr(datetime)').get()
         article_item['url'] = url
-        article_item['author'] = [a.strip('\n') for a in article.xpath('//header/div/div/div[2]/a/text()').extract()]
+        article_item['authors'] = [a.strip('\n') for a in article.xpath('//header/div/div/div[2]/a/text()').extract()]
         article_item['agency'] = self.name
         # teaser could be empty
         article_item['teaser'] = article.css('header div div div.RichText::text').get().strip('\n') if article.css('header div div div.RichText::text').get() is not None else '__unknown__'

@@ -13,7 +13,7 @@ class NewsCollectorItem(scrapy.Item):
     date = scrapy.Field() #datetime: release date of the article
     teaser = scrapy.Field() #short introduction or first few sentences of the article (shown on the main page)
     agency = scrapy.Field() #spiegel, ntv, etc
-    author = scrapy.Field() #list of authors
+    authors = scrapy.Field() #list of authors
     is_update = scrapy.Field() #bool: is it a update on the article (used by ntv, but doesnot work currently)
     kicker = scrapy.Field() #second-headline
     headline = scrapy.Field() 

@@ -129,7 +129,7 @@ class NtvSpider(scrapy.Spider):
             authors.extend(author_names)
             authors.remove(a)
 
-        article_item['author'] = authors
+        article_item['authors'] = authors
         yield article_item
 
 
