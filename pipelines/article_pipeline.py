@@ -5,7 +5,7 @@ class ArticlePipeline(object):
     def process_item(self, item, spider):
         for attr in item.keys():
             if attr == 'date':
-                if item['agency'] == 'zeit':
+                if item['agency'] == 'zeit' or item['agency'] == 'golem':
                     #1968-11-29T08:00:00+01:00 isoformat
                     date = datetime.fromisoformat(item[attr])
                 elif item['agency'] == 'n-tv':
@@ -19,7 +19,7 @@ class ArticlePipeline(object):
                     #11.05.2020 14:26 Uhr
                     date = datetime.strptime(date_string, '%d.%m.%Y %H:%M Uhr')
                 else:
-                    raise NotImplementedError('ArticlePipeline, no date-formatter implemented')
+                    raise NotImplementedError('ArticlePipeline, no date-formatter implemented for this spider')
 
                 item[attr] = date.timestamp()
             elif attr == 'authors':

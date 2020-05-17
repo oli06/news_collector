@@ -26,7 +26,8 @@ WHITELIST = [
     'https://www.n-tv.de',
     'https://www.spiegel.de',
     'https://www.tagesschau.de',
-    'https://www.zeit.de'
+    'https://www.zeit.de',
+    'https://www.golem.de'
 ]
 
 DUPEFILTER_CLASS = 'scrapy.dupefilters.BaseDupeFilter'
