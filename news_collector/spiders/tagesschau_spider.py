@@ -141,6 +141,11 @@ class TagesschauSpider(scrapy.Spider):
             logging.debug('not parsing, multimedia ' + url)
             return False
 
+        if url.startswith('https://www.tagesschau.de/thema'):
+            logging.debug('not parsing, thema ' + url)
+            return False
+
+
         if url in self.urls_parsed:
             logging.debug(url + " already parsed")
             return False
