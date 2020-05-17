@@ -44,7 +44,7 @@ class TagesschauSpider(scrapy.Spider):
 
     def parse(self, response):
         for section in response.css('div.sectionA'): #first article is tagesthemen video
-            for a in section.css('div.con div.modCon div.modA div.boxCon div.box div.teaser div.mediaCon a.mediaLink'):
+            for a in section.css('div.con div.modCon div.mod div.boxCon div.box div.teaser div.mediaCon a.mediaLink'):
                 yield response.follow(a, callback=self.parseArticle)
 
     def parseArticle(self, response):

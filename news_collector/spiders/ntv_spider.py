@@ -55,6 +55,10 @@ class NtvSpider(scrapy.Spider):
 
             yield response.follow(href, callback=self.parseArticle)
 
+        most_read = content.xpath('//section[@class="list--numbered"]/ul/li/a')
+        for a in most_read:
+            yield response.follow(a, callback=self.parseArticle)
+
     def parseArticle(self, response):
         article = response.xpath('//article[@class="article"]')
         url = response.request.url
