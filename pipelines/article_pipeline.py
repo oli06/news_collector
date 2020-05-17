@@ -11,13 +11,13 @@ class ArticlePipeline(object):
                 elif item['agency'] == 'n-tv':
                     #Sonntag, 24. August 2014
                     date_string = item[attr].split(',')[1]
-                    date = datetime.strptime(date_string, '%d. %B %Y')
+                    date = datetime.strptime(date_string, ' %d. %B %Y')
                 elif item['agency'] == 'spiegel':
                     #2020-05-07 11:41:32
                     date = datetime.strptime(item[attr], '%Y-%m-%d %H:%M:%S')
                 elif item['agency'] == 'tagesschau':
                     #11.05.2020 14:26 Uhr
-                    date = datetime.strptime(date_string, '%d.%m.%Y %H:%M Uhr')
+                    date = datetime.strptime(item[attr], '%d.%m.%Y %H:%M Uhr')
                 else:
                     raise NotImplementedError('ArticlePipeline, no date-formatter implemented for this spider')
 
