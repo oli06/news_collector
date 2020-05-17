@@ -35,8 +35,8 @@ class ZeitSpider(scrapy.Spider):
 
     def start_requests2(self):
         urls = [
-            #'https://www.zeit.de/wissen/gesundheit/coronavirus-echtzeit-karte-deutschland-landkreise-infektionen-ausbreitung'
-            'https://www.zeit.de/sport/2020-05/bundesliga-start-fussball-spiele-coronavirus-manager-fans' # pagination test
+            'https://www.zeit.de/wissen/gesundheit/coronavirus-echtzeit-karte-deutschland-landkreise-infektionen-ausbreitung'
+            #'https://www.zeit.de/sport/2020-05/bundesliga-start-fussball-spiele-coronavirus-manager-fans' # pagination test
         
         ]
         allowed_domains = [
@@ -58,7 +58,9 @@ class ZeitSpider(scrapy.Spider):
     def parseArticle(self, response):
         article = response.css('article.article')
         url = response.request.url
-        category = url.split('/')[3]
+        category = response.css('nav.nav__ressorts ul li a.nav__ressorts-link--current span::text').get()
+        if category is None:
+            category = url.split('/')[3]
 
         if not self.isAccessible(response, url):
             return
@@ -179,6 +181,10 @@ class ZeitSpider(scrapy.Spider):
 
         if url.startswith('https://www.zeit.de/autoren'):
             logging.debug('not parsing, authors page ' + url)
+            return False
+
+        if url.startswith('https://www.zeit.de/suche/'):
+            logging.debug('not parsing, search page ' + url)
             return False
 
         if url in self.urls_parsed:
