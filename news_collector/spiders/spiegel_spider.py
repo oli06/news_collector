@@ -17,7 +17,7 @@ class SpiegelSpider(scrapy.Spider):
     logging.basicConfig(
         filename=f'{name}_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
         format='%(levelname)s: %(message)s',
-        level=logging.INFO
+        level=logging.ERROR
     )
 
     def __init__(self):

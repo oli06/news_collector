@@ -4,7 +4,7 @@ import datetime
 logging.basicConfig(
     filename=f'tagesschau_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
     format='%(levelname)s: %(message)s',
-    level=logging.INFO
+    level=logging.ERROR
 )
 
 from scrapy.utils.log import configure_logging 
