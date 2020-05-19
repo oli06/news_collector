@@ -1,29 +1,15 @@
 import scrapy
 import logging
-from scrapy.utils.log import configure_logging 
 import datetime
+import news_collector.spiders.base_spider as bs
 from news_collector.items import NewsCollectorItem
-from scrapy import signals
-from pydispatch import dispatcher
 
 
-class NtvSpider(scrapy.Spider):
+class NtvSpider(bs.BaseSpider):
     name = "n-tv"
-    total_parsed = 0
-    urls_parsed = []
-
-    configure_logging(install_root_handler=False)
-    logging.basicConfig(
-        filename=f'{name}_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
-        format='%(levelname)s: %(message)s',
-        level=logging.ERROR
-    )
 
     def __init__(self):
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
-
-    def spider_closed(self, spider):
-        logging.info(f'total parsed: {self.total_parsed}')
+        super().__init__(self.name, 200, "https://www.n-tv.de/", ['mediathek'])
 
     def start_requests(self):
         urls = [
@@ -71,7 +57,7 @@ class NtvSpider(scrapy.Spider):
             return
 
         self.total_parsed += 1
-        logging.debug(f"{self.total_parsed}. {url}")
+        logging.info(f"{self.total_parsed}. {url}")
 
         article_wrapper = article.css('div.article__wrapper')
         header = article_wrapper.css('div.article__header')
@@ -137,28 +123,3 @@ class NtvSpider(scrapy.Spider):
 
         article_item['authors'] = authors
         yield article_item
-
-
-    def isAccessible(self, response, url):
-        if self.total_parsed >= 150:
-            #print("done, max reached")
-            logging.debug('max reached')
-            return False
-
-        if not url.startswith('https://www.n-tv.de/'):
-            # currently no support for other newspages
-            logging.debug('not parsing, other newspage ' + url)
-            return False
-
-        if url.startswith('https://www.n-tv.de/mediathek'):
-            # currently no support for videos / audio
-            logging.debug('not parsing, mediathek ' + url)
-            return False
-
-        if url in self.urls_parsed:
-            logging.debug(url + " already parsed")
-            return False
-        else:
-            self.urls_parsed.append(url)
-
-        return True

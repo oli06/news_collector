@@ -1,32 +1,16 @@
 import scrapy
 import logging
 import datetime
-logging.basicConfig(
-    filename=f'tagesschau_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
-    format='%(levelname)s: %(message)s',
-    level=logging.ERROR
-)
-
-from scrapy.utils.log import configure_logging 
-
 from news_collector.items import NewsCollectorItem
-from scrapy import signals
-from pydispatch import dispatcher
+import news_collector.spiders.base_spider as bs
 
 
-class TagesschauSpider(scrapy.Spider):
+class TagesschauSpider(bs.BaseSpider):
     name = "tagesschau"
-    total_parsed = 0
-    urls_parsed = []
-
-    configure_logging(install_root_handler=False)
 
     def __init__(self):
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
+        super().__init__(self.name, 200, "https://www.tagesschau.de/", ['multimedia', 'thema'])
 
-    def spider_closed(self, spider):
-        logging.info(f'total parsed: {self.total_parsed}')
-        
     def start_requests(self):
         urls = [
             "https://www.tagesschau.de/"
@@ -124,32 +108,3 @@ class TagesschauSpider(scrapy.Spider):
         article_item['text'] = article_item['text'].strip()
 
         yield article_item
-
-
-    def isAccessible(self, response, url):
-        if self.total_parsed >= 150:
-            #print("done, max reached")
-            logging.debug('max reached')
-            return False
-
-        if not url.startswith('https://www.tagesschau.de/'):
-            # currently no support for other newspages
-            logging.debug('not parsing, other newspage ' + url)
-            return False
-
-        if url.startswith('https://www.tagesschau.de/multimedia'):
-            logging.debug('not parsing, multimedia ' + url)
-            return False
-
-        if url.startswith('https://www.tagesschau.de/thema'):
-            logging.debug('not parsing, thema ' + url)
-            return False
-
-
-        if url in self.urls_parsed:
-            logging.debug(url + " already parsed")
-            return False
-        else:
-            self.urls_parsed.append(url)
-
-        return True

@@ -1,31 +1,16 @@
 import scrapy
 import logging
-from scrapy.utils.log import configure_logging
-from scrapy import Item, Field
 import datetime 
 from news_collector.items import NewsCollectorItem
-from scrapy.mail import MailSender
-from scrapy import signals
-from pydispatch import dispatcher
+import news_collector.spiders.base_spider as bs
 
-class SpiegelSpider(scrapy.Spider):
+
+class SpiegelSpider(bs.BaseSpider):
     name = "spiegel"
-    total_parsed = 0
-    urls_parsed = []
-
-    configure_logging(install_root_handler=False)
-    logging.basicConfig(
-        filename=f'{name}_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
-        format='%(levelname)s: %(message)s',
-        level=logging.ERROR
-    )
 
     def __init__(self):
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
-
-    def spider_closed(self, spider):
-        logging.info(f'total parsed: {self.total_parsed}')
-
+        super().__init__(self.name, 200, "https://www.spiegel.de/", ['backstage', 'extras'])
+        
     def start_requests(self):
         allowed_domains = ['www.spiegel.de/']
         urls = [
@@ -119,25 +104,6 @@ class SpiegelSpider(scrapy.Spider):
 
 
     def isAccessible(self, response, url):
-        if self.total_parsed >= 100:
-            return False
-
-        if url in self.urls_parsed:
-            logging.debug(f"{url} already parsed")
-            return False
-        else:
-            self.urls_parsed.append(url)
-
-        if not url.startswith('https://www.spiegel.de/'):
-            # currently no support for other newspages
-            logging.debug(f"not parsing, other newspage: {url}")
-            return False
-        
-        if url.startswith('https://www.spiegel.de/backstage') or url.startswith('https://www.spiegel.de/extras'):
-            #backstage and extra are spiegel pages where no news content exists
-            logging.debug(f'backstage with: {url}')
-            return False
-
         if len(response.xpath('//div[@data-component="Paywall"]')) != 0:
             # we dont want paywalls --> spiegel+
             logging.debug(f"spiegel+ content: {url}")
@@ -148,4 +114,4 @@ class SpiegelSpider(scrapy.Spider):
             logging.debug("not parsing, theme")
             return False
 
-        return True
+        return super().isAccessible(repsonse, url)

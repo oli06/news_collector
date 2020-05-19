@@ -1,29 +1,14 @@
 import scrapy
 import logging
-from scrapy.utils.log import configure_logging
 import datetime
 from news_collector.items import NewsCollectorItem
-from scrapy import signals
-from pydispatch import dispatcher
+import news_collector.spiders.base_spider as bs
 
-
-class ZeitSpider(scrapy.Spider):
+class ZeitSpider(bs.BaseSpider):
     name = "golem"
-    total_parsed = 0
-    urls_parsed = []
-
-    configure_logging(install_root_handler=False)
-    logging.basicConfig(
-        filename=f'{name}_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
-        format='%(levelname)s: %(message)s',
-        level=logging.ERROR
-    )
 
     def __init__(self):
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
-
-    def spider_closed(self, spider):
-        logging.info(f'total parsed: {self.total_parsed}')
+        super().__init__(self.name, 200, "https://www.golem.de/", [])
 
     def start_requests2(self):
         urls = [
@@ -36,8 +21,8 @@ class ZeitSpider(scrapy.Spider):
     def start_requests(self):
         urls = [
             
-            #'https://www.golem.de/news/kopie-von-rainbow-six-siege-ubisoft-verklagt-apple-und-google-2005-148533.html'
-            'https://www.golem.de/news/bill-gates-corona-verschwoerungstheorien-im-mainstream-2005-148408.html'#pagination
+            'https://www.golem.de/news/kopie-von-rainbow-six-siege-ubisoft-verklagt-apple-und-google-2005-148533.html'
+            #'https://www.golem.de/news/bill-gates-corona-verschwoerungstheorien-im-mainstream-2005-148408.html'#pagination
         ]
 
         for url in urls:
@@ -159,20 +144,9 @@ class ZeitSpider(scrapy.Spider):
 
 
     def isAccessible(self, response, url):
-        if self.total_parsed >= 150:
-            #print("done, max reached")
-            logging.debug('max reached')
-            return False
-
         if not url.startswith('https://www.golem.de/news'):
             # currently no support for other newspages
             logging.debug('not parsing, other newspage or subpage ' + url)
             return False
 
-        if url in self.urls_parsed:
-            logging.debug(url + " already parsed")
-            return False
-        else:
-            self.urls_parsed.append(url)
-
-        return True
+        return super().isAccessible(response, url)

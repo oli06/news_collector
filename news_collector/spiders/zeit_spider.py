@@ -1,29 +1,15 @@
 import scrapy
 import logging
-from scrapy.utils.log import configure_logging
 import datetime
 from news_collector.items import NewsCollectorItem
-from scrapy import signals
-from pydispatch import dispatcher
+import news_collector.spiders.base_spider as bs
 
 
-class ZeitSpider(scrapy.Spider):
+class ZeitSpider(bs.BaseSpider):
     name = "zeit"
-    total_parsed = 0
-    urls_parsed = []
-
-    configure_logging(install_root_handler=False)
-    logging.basicConfig(
-        filename=f'{name}_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log',
-        format='%(levelname)s: %(message)s',
-        level=logging.ERROR
-    )
 
     def __init__(self):
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
-
-    def spider_closed(self, spider):
-        logging.info(f'total parsed: {self.total_parsed}')
+        super().__init__(self.name, 200, "https://www.zeit.de/", ['thema', 'autoren', 'suche'])
 
     def start_requests(self):
         urls = [
@@ -38,9 +24,6 @@ class ZeitSpider(scrapy.Spider):
             'https://www.zeit.de/wissen/gesundheit/coronavirus-echtzeit-karte-deutschland-landkreise-infektionen-ausbreitung'
             #'https://www.zeit.de/sport/2020-05/bundesliga-start-fussball-spiele-coronavirus-manager-fans' # pagination test
         
-        ]
-        allowed_domains = [
-            'https://www.zeit.de/'
         ]
 
         for url in urls:
@@ -155,16 +138,6 @@ class ZeitSpider(scrapy.Spider):
 
 
     def isAccessible(self, response, url):
-        if self.total_parsed >= 150:
-            #print("done, max reached")
-            logging.debug('max reached')
-            return False
-
-        if not url.startswith('https://www.zeit.de/'):
-            # currently no support for other newspages
-            logging.debug('not parsing, other newspage ' + url)
-            return False
-
         if len(response.xpath('.//div[contains(@class, "liveblog")]')) > 0:
             # currently no support for liveblogs, e.g. https://www.zeit.de/politik/deutschland/2020-03/thueringen-ministerpraesidentenwahl-bodo-ramelow-bjoern-hoecke-live
             logging.debug(f'not parsing, liveblog {url}')
@@ -175,22 +148,4 @@ class ZeitSpider(scrapy.Spider):
             logging.debug(f'not parsing, z+ content {url}')
             return False
 
-        if url.startswith('https://www.zeit.de/thema'):
-            logging.debug('not parsing, theme ' + url)
-            return False
-
-        if url.startswith('https://www.zeit.de/autoren'):
-            logging.debug('not parsing, authors page ' + url)
-            return False
-
-        if url.startswith('https://www.zeit.de/suche/'):
-            logging.debug('not parsing, search page ' + url)
-            return False
-
-        if url in self.urls_parsed:
-            logging.debug(url + " already parsed")
-            return False
-        else:
-            self.urls_parsed.append(url)
-
-        return True
+        return super().isAccessible(response, url)
