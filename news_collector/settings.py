@@ -19,7 +19,7 @@ MONGODB_SERVER = "localhost"
 MONGODB_PORT = 27017
 MONGODB_DB = "news"
 MONGODB_COLLECTION = "articles"
-
+LOG_LEVEL='INFO'
 #defines all  news pages that can currently be processed
 #dont add '/' at the end
 WHITELIST = [
