@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import locale
 
 class ArticlePipeline(object):
     def process_item(self, item, spider):
@@ -11,7 +11,7 @@ class ArticlePipeline(object):
                 elif item['agency'] == 'n-tv':
                     #Sonntag, 24. August 2014
                     date_string = item[attr].split(',')[1]
-                    date = datetime.strptime(date_string, ' %d. %B %Y')
+                    date = getLocalizedMonth(date_string, ' %d. %B %Y')
                 elif item['agency'] == 'spiegel':
                     #2020-05-07 11:41:32
                     date = datetime.strptime(item[attr], '%Y-%m-%d %H:%M:%S')
@@ -33,3 +33,12 @@ class ArticlePipeline(object):
                 item[attr] = item[attr].strip().strip('\n').strip()
 
         return item
+
+#https://stackoverflow.com/questions/17902413/localized-month-name-in-python
+def getLocalizedMonth(date_string, format_string):
+    locale.setlocale(locale.LC_ALL, "")
+    date = datetime.strptime(date_string, format_string)
+    locale.setlocale(locale.LC_ALL, locale.getdefaultlocale())
+
+    return date
+     
