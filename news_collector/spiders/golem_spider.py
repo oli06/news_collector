@@ -96,7 +96,7 @@ class ZeitSpider(bs.BaseSpider):
             article_item['named_references'].update(named_ref)
         
         #get next page
-        next_page = response.css('article table td.text1 a::attr(href)').get()
+        next_page = response.css('article table td.text1 a#atoc_next::attr(href)').get()
         if next_page is None or next_page == '': #next page does not exist
             print('last page')
             for x in article_item['named_references']:
