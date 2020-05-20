@@ -5,6 +5,7 @@ from scrapy import signals
 from pydispatch import dispatcher
 import math
 import news_collector.top_level_formatter as tlf
+from pathlib import Path
 
 
 class BaseSpider(scrapy.Spider):
@@ -46,13 +47,13 @@ class BaseSpider(scrapy.Spider):
         return True
 
 
-
-
 def log_init(spider):
     date = datetime.datetime.now()
     now = date.strftime('%Y-%m-%d-%H-%M-%S')
-    log_name = "./logs/spiders/{0}_{1}.log".format(spider.name, now)
-
+    log_dir = './logs/spiders'
+    Path(log_dir).mkdir(parents=True, exist_ok=True) #create dir if absent
+    log_name = "{0}/{1}_{2}.log".format(log_dir, spider.name, now)
+    
     handler = logging.FileHandler(log_name)
     handler.setLevel(logging.INFO)
     formatter = logging.Formatter('[{0}] - [%(asctime)s] - [%(levelname)s]\t|  %(message)s'.format(spider.name))
