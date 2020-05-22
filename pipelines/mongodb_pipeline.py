@@ -10,11 +10,13 @@ from pymongo import MongoClient
 
 
 class MongoDbPipeline(object):
-    def __init__(self, mongo_server, mongo_port, mongo_db, mongo_collection):
+    def __init__(self, mongo_server, mongo_port, mongo_db, mongo_collection, mongo_user, mongo_password):
         self.mongo_server = mongo_server
         self.mongo_port = mongo_port
         self.mongo_db = mongo_db
         self.mongo_collection = mongo_collection
+        self.mongo_user = mongo_user
+        self.mongo_password = mongo_password
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -22,11 +24,17 @@ class MongoDbPipeline(object):
             mongo_server=crawler.settings.get('MONGODB_SERVER'), 
             mongo_port=crawler.settings.get('MONGODB_PORT'), 
             mongo_db=crawler.settings.get('MONGODB_DB'), 
-            mongo_collection=crawler.settings.get('MONGODB_COLLECTION')
+            mongo_collection=crawler.settings.get('MONGODB_COLLECTION'),
+            mongo_user=crawler.settings.get('MONGODB_USER', None),
+            mongo_password=crawler.settings.get('MONGODB_PASSWORD', None)
         )
 
     def open_spider(self, spider):
-        self.client = MongoClient(self.mongo_server, self.mongo_port)
+        #use auth or not (if no user is specified in settings.py)
+        if self.mongo_user is None:
+            self.client = MongoClient(self.mongo_server, self.mongo_port)
+        else: 
+            self.client = MongoClient(f'mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_server}:{self.mongo_port}')
         self.db = self.client[self.mongo_db]
 
     def close_spider(self, spider):
