@@ -10,6 +10,7 @@ from pydispatch import dispatcher
 from pymongo import MongoClient
 from scrapy.exceptions import IgnoreRequest
 
+
 class NewsCollectorSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
@@ -58,43 +59,49 @@ class NewsCollectorSpiderMiddleware(object):
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-
-
 class NewsCollectorDownloaderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
 
-    def __init__(self):
-        if self.mongo_user is None:
-            client = MongoClient(self.mongo_server, self.mongo_port)
-        else: 
-            client = MongoClient(f'mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_server}:{self.mongo_port}')        #self.urls = self.db.news.articles.find({ "agency": "n-tv" })
-        
-        self.db = client[self.mongo_db]
-        dispatcher.connect(self.spider_closed, signals.spider_closed)
+    def __init__(self, mongo_server, mongo_port, mongo_db, mongo_collection, mongo_user, mongo_password, whitelist):
+        self.mongo_server = mongo_server
+        self.mongo_port = mongo_port
+        self.mongo_db = mongo_db
+        self.mongo_collection = mongo_collection
+        self.mongo_user = mongo_user
+        self.mongo_password = mongo_password
 
+        if mongo_user is None:
+            self.client = MongoClient(mongo_server, mongo_port)
+        else:
+            # self.urls = self.db.news.articles.find({ "agency": "n-tv" })
+            self.client = MongoClient(
+                f'mongodb://{mongo_user}:{mongo_password}@{mongo_server}:{mongo_port}')
+
+        self.db = self.client[mongo_db]
+        self.whitelist = whitelist
+        dispatcher.connect(self.spider_closed, signals.spider_closed)
 
     @classmethod
     def from_crawler(cls, crawler):
         # This method is used by Scrapy to create your spiders.
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        cls.whitelist = crawler.settings['WHITELIST']
+        s = cls(crawler.settings.get('MONGODB_SERVER'),
+                crawler.settings.get('MONGODB_PORT'),
+                crawler.settings.get('MONGODB_DB'),
+                crawler.settings.get('MONGODB_COLLECTION'),
+                crawler.settings.get('MONGODB_USER', None),
+                crawler.settings.get('MONGODB_PASSWORD', None),
+                crawler.settings['WHITELIST'])
 
-        cls.mongo_server=crawler.settings.get('MONGODB_SERVER')
-        cls.mongo_port=crawler.settings.get('MONGODB_PORT')
-        cls.mongo_db=crawler.settings.get('MONGODB_DB')
-        cls.mongo_collection=crawler.settings.get('MONGODB_COLLECTION')
-        cls.mongo_user=crawler.settings.get('MONGODB_USER', None)
-        cls.mongo_password=crawler.settings.get('MONGODB_PASSWORD', None)
+        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
 
         return s
 
     def process_request(self, request, spider):
         url = request.url
 
-        #TODO regex for file names
+        # TODO regex for file names
         if url.endswith('.pdf') or url.endswith('.png'):
             raise IgnoreRequest()
 
@@ -102,8 +109,8 @@ class NewsCollectorDownloaderMiddleware(object):
         if tl_domain in self.whitelist:
             if self.db[self.mongo_collection].find({"url": url}).count(with_limit_and_skip=True) == 1:
                 raise IgnoreRequest()
-            return None #everything is fine
-     
+            return None  # everything is fine
+
         raise IgnoreRequest()
         # Called for each request that goes through the downloader
         # middleware.
@@ -137,6 +144,5 @@ class NewsCollectorDownloaderMiddleware(object):
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
 
-
     def spider_closed(self, spider):
-        self.db.close()
+        self.client.close()
