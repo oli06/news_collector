@@ -66,8 +66,12 @@ class NewsCollectorDownloaderMiddleware(object):
     # passed objects.
 
     def __init__(self):
-        self.db = MongoClient()
-        #self.urls = self.db.news.articles.find({ "agency": "n-tv" })
+        if self.mongo_user is None:
+            client = MongoClient(self.mongo_server, self.mongo_port)
+        else: 
+            client = MongoClient(f'mongodb://{self.mongo_user}:{self.mongo_password}@{self.mongo_server}:{self.mongo_port}')        #self.urls = self.db.news.articles.find({ "agency": "n-tv" })
+        
+        self.db = client[self.mongo_db]
         dispatcher.connect(self.spider_closed, signals.spider_closed)
 
 
@@ -77,6 +81,14 @@ class NewsCollectorDownloaderMiddleware(object):
         s = cls()
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         cls.whitelist = crawler.settings['WHITELIST']
+
+        cls.mongo_server=crawler.settings.get('MONGODB_SERVER')
+        cls.mongo_port=crawler.settings.get('MONGODB_PORT')
+        cls.mongo_db=crawler.settings.get('MONGODB_DB')
+        cls.mongo_collection=crawler.settings.get('MONGODB_COLLECTION')
+        cls.mongo_user=crawler.settings.get('MONGODB_USER', None)
+        cls.mongo_password=crawler.settings.get('MONGODB_PASSWORD', None)
+
         return s
 
     def process_request(self, request, spider):
@@ -88,7 +100,7 @@ class NewsCollectorDownloaderMiddleware(object):
 
         tl_domain = '/'.join(url.split('/')[:3])
         if tl_domain in self.whitelist:
-            if self.db.news.articles.find({"url": url}).count(with_limit_and_skip=True) == 1:
+            if self.db[self.mongo_collection].find({"url": url}).count(with_limit_and_skip=True) == 1:
                 raise IgnoreRequest()
             return None #everything is fine
      
