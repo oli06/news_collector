@@ -44,7 +44,7 @@ class ZeitSpider(bs.BaseSpider):
             return
 
         self.total_parsed += 1
-        logging.debug(f"{self.total_parsed}. {url}")
+        logging.info(f"{self.total_parsed}. {url}")
 
         # create item and add values
         article_item = NewsCollectorItem()

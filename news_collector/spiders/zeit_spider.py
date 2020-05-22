@@ -49,7 +49,7 @@ class ZeitSpider(bs.BaseSpider):
             return
 
         self.total_parsed += 1
-        logging.debug(f"{self.total_parsed}. {url}")
+        logging.info(f"{self.total_parsed}. {url}")
 
         footer = article.css('div.article-footer')
 
@@ -94,17 +94,14 @@ class ZeitSpider(bs.BaseSpider):
         #get next page
         next_page = body.css('nav.article-pagination a.article-pagination__link::attr(href)').get()
         if next_page is None or next_page == 'https://www.zeit.de/index' or next_page == '': #next page does not exist
-            print('last page')
             for x in article_item['named_references']:
                 ref_url = article_item['named_references'][x]
                 yield response.follow(article_item['named_references'][x], callback=self.parseArticle)
             yield article_item
         else:
-            print('else')
             next_page_request = scrapy.Request(next_page, callback=self.pagination)
             next_page_request.meta['article'] = article_item
             yield next_page_request
-            print("reaching?")
 
     def extract_text_and_named_references(self, body_selector):
         #select all elements without class="ad-container"

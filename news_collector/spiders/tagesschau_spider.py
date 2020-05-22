@@ -9,7 +9,7 @@ class TagesschauSpider(bs.BaseSpider):
     name = "tagesschau"
 
     def __init__(self):
-        super().__init__(self.name, 200, "https://www.tagesschau.de/", ['multimedia', 'thema'])
+        super().__init__(self.name, 200, "https://www.tagesschau.de/", ['multimedia', '100sekunden', 'regional', 'thema'])
 
     def start_requests(self):
         urls = [
@@ -44,7 +44,7 @@ class TagesschauSpider(bs.BaseSpider):
             return
 
         self.total_parsed += 1
-        logging.debug(f"{self.total_parsed}. {url}")
+        logging.info(f"{self.total_parsed}. {url}")
 
         article = response.css('div.storywrapper')
         header = article.css('div.sectionA')
