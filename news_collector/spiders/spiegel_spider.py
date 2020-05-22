@@ -114,4 +114,4 @@ class SpiegelSpider(bs.BaseSpider):
             logging.debug("not parsing, theme")
             return False
 
-        return super().isAccessible(repsonse, url)
+        return super().isAccessible(response, url)
