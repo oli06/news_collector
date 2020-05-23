@@ -9,7 +9,7 @@ from scrapy import signals
 from pydispatch import dispatcher
 from pymongo import MongoClient
 from scrapy.exceptions import IgnoreRequest
-
+import logging
 
 class NewsCollectorSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -108,9 +108,11 @@ class NewsCollectorDownloaderMiddleware(object):
         tl_domain = '/'.join(url.split('/')[:3])
         if tl_domain in self.whitelist:
             if self.db[self.mongo_collection].find({"url": url}).count(with_limit_and_skip=True) == 1:
+                logging.info(f'skipping {url}, already in database')
                 raise IgnoreRequest()
             return None  # everything is fine
 
+        logging.info(f'skipping {url}, not in whitelist')
         raise IgnoreRequest()
         # Called for each request that goes through the downloader
         # middleware.
