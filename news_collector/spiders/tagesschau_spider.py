@@ -40,7 +40,7 @@ class TagesschauSpider(bs.BaseSpider):
             logging.debug(f'newsticker not parsing: {url}')
             return
 
-        if not self.isAccessible(response, url):
+        if not self.can_process(response, url):
             return
 
         self.total_parsed += 1

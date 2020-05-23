@@ -43,7 +43,7 @@ class SpiegelSpider(bs.BaseSpider):
     def parseArticle(self, response):
         url = response.request.url
 
-        if not self.isAccessible(response, url):
+        if not self.can_process(response, url):
             return
 
         category = url.split('/')[3] # bad style...
@@ -103,7 +103,7 @@ class SpiegelSpider(bs.BaseSpider):
         yield article_item
 
 
-    def isAccessible(self, response, url):
+    def can_process(self, response, url):
         if len(response.xpath('//div[@data-component="Paywall"]')) != 0:
             # we dont want paywalls --> spiegel+
             logging.debug(f"spiegel+ content: {url}")
@@ -114,4 +114,4 @@ class SpiegelSpider(bs.BaseSpider):
             logging.debug("not parsing, theme")
             return False
 
-        return super().isAccessible(response, url)
+        return super().can_process(response, url)

@@ -23,7 +23,7 @@ class BaseSpider(scrapy.Spider):
     def spider_closed(self, spider):
         logging.info(f'total parsed: {self.total_parsed}')
 
-    def isAccessible(self, response, url):
+    def can_process(self, response, url):
         if self.total_parsed >= self.max:
             logging.debug(f'max ({self.max}) reached')
             return False

@@ -45,7 +45,7 @@ class ZeitSpider(bs.BaseSpider):
         if category is None:
             category = url.split('/')[3]
 
-        if not self.isAccessible(response, url):
+        if not self.can_process(response, url):
             return
 
         self.total_parsed += 1
@@ -134,7 +134,7 @@ class ZeitSpider(bs.BaseSpider):
         return article_text, named_references
 
 
-    def isAccessible(self, response, url):
+    def can_process(self, response, url):
         if len(response.xpath('.//div[contains(@class, "liveblog")]')) > 0:
             # currently no support for liveblogs, e.g. https://www.zeit.de/politik/deutschland/2020-03/thueringen-ministerpraesidentenwahl-bodo-ramelow-bjoern-hoecke-live
             logging.debug(f'not parsing, liveblog {url}')
@@ -145,4 +145,4 @@ class ZeitSpider(bs.BaseSpider):
             logging.debug(f'not parsing, z+ content {url}')
             return False
 
-        return super().isAccessible(response, url)
+        return super().can_process(response, url)

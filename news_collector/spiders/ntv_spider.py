@@ -49,7 +49,7 @@ class NtvSpider(bs.BaseSpider):
         article = response.xpath('//article[@class="article"]')
         url = response.request.url
 
-        if not self.isAccessible(response, url):
+        if not self.can_process(response, url):
             return
 
         if len(article) == 0:  # there a webpages that are not news articles
