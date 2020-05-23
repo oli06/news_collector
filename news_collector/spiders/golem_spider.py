@@ -4,13 +4,13 @@ import datetime
 from news_collector.items import NewsCollectorItem
 import news_collector.spiders.base_spider as bs
 
-class ZeitSpider(bs.BaseSpider):
+class GolemSpider(bs.BaseSpider):
     name = "golem"
 
     def __init__(self):
-        super().__init__(self.name, 200, "https://www.golem.de/", [])
+        super().__init__(self.name, 200, "https://www.golem.de/", ['specials'])
 
-    def start_requests2(self):
+    def start_requests(self):
         urls = [
             "https://www.golem.de/"
         ]
@@ -18,9 +18,9 @@ class ZeitSpider(bs.BaseSpider):
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
-    def start_requests(self):
+    def start_requests2(self):
         urls = [
-            
+            #'https://www.golem.de/news/deutsche-e-auto-plaene-von-null-auf-ueberambitioniert-1809-136772-2.html' #doesnt get date?   
             'https://www.golem.de/news/kopie-von-rainbow-six-siege-ubisoft-verklagt-apple-und-google-2005-148533.html'
             #'https://www.golem.de/news/bill-gates-corona-verschwoerungstheorien-im-mainstream-2005-148408.html'#pagination
         ]
@@ -29,20 +29,20 @@ class ZeitSpider(bs.BaseSpider):
             yield scrapy.Request(url=url, callback=self.parseArticle)
 
     def parse(self, response):
-        main = response.css('main.main')
-        article_divs = main.xpath('.//div[not(@class="ad-container")][contains(@class, "cp-region")]')
-
-        
-        for div in article_divs[:3]: #only crawl the first few articles in the first 3 sections. remove these constraints to crawl many articles
-            for article in div.css('article a::attr(href)'):
-                yield response.follow(article, callback=self.parseArticle)
+        main = response.css('body div div#grandwrapper')
+        articles = main.css('div.g4 section ol.list-articles li header a::attr(href)')
+        articles.append(main.css('section#index-promo header a::attr(href)'))
+        for article in articles:
+            href = article.get()
+            yield response.follow(href, callback=self.parseArticle)
 
     def parseArticle(self, response):
         article = response.css('article')
         url = response.request.url        
-        if not self.isAccessible(response, url):
+        
+        if not self.can_process(response, url):
             return
-
+        
         self.total_parsed += 1
         logging.info(f"{self.total_parsed}. {url}")
 
@@ -98,19 +98,16 @@ class ZeitSpider(bs.BaseSpider):
         #get next page
         next_page = response.css('article table td.text1 a#atoc_next::attr(href)').get()
         if next_page is None or next_page == '': #next page does not exist
-            print('last page')
             for x in article_item['named_references']:
                 ref_url = article_item['named_references'][x]
                 yield response.follow(article_item['named_references'][x], callback=self.parseArticle)
             yield article_item
         else:
-            print('else')
             if not next_page.startswith('https://www.golem.de'):
                 next_page = 'https://www.golem.de' + next_page
             next_page_request = scrapy.Request(next_page, callback=self.pagination)
             next_page_request.meta['article'] = article_item
             yield next_page_request
-            print("reaching?")
 
     def extract_text_and_named_references(self, body_selector):
         #select all elements without class="ad-container"
@@ -142,11 +139,17 @@ class ZeitSpider(bs.BaseSpider):
 
         return article_text, named_references
 
-
-    def isAccessible(self, response, url):
+    def can_process(self, response, url):
         if not url.startswith('https://www.golem.de/news'):
             # currently no support for other newspages
             logging.debug('not parsing, other newspage or subpage ' + url)
             return False
 
-        return super().isAccessible(response, url)
+        #abort if it is a page inside a "paginated" article
+        prev_page = response.css('article table td.text1 a#atoc_prev::attr(href)').get()
+        if prev_page is not None:
+            response.follow(prev_page, callback=self.parseArticle) #will be parsed, after all others articles are parsed -> probably max reached beforehand
+            logging.info(f'redirect parser to previous page ({prev_page}) of paginated article and cancel request with url {url}')
+            return False
+        
+        return super().can_process(response, url)
