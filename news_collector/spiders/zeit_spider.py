@@ -9,7 +9,7 @@ class ZeitSpider(bs.BaseSpider):
     name = "zeit"
 
     def __init__(self):
-        super().__init__(self.name, 200, "https://www.zeit.de/", ['thema', 'autoren', 'suche'])
+        super().__init__(self.name, 500, "https://www.zeit.de/", ['thema', 'autoren', 'suche'])
 
     def start_requests(self):
         urls = [

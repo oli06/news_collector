@@ -8,7 +8,7 @@ class GolemSpider(bs.BaseSpider):
     name = "golem"
 
     def __init__(self):
-        super().__init__(self.name, 200, "https://www.golem.de/", ['specials'])
+        super().__init__(self.name, 500, "https://www.golem.de/", ['specials'])
 
     def start_requests(self):
         urls = [

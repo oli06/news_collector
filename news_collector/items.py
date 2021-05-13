@@ -14,7 +14,7 @@ class NewsCollectorItem(scrapy.Item):
     teaser = scrapy.Field() #short introduction or first few sentences of the article (shown on the main page)
     agency = scrapy.Field() #spiegel, ntv, etc
     authors = scrapy.Field() #list of authors
-    is_update = scrapy.Field() #bool: is it a update on the article (used by ntv, but doesnot work currently)
+    is_update = scrapy.Field() #bool: is it a update on the article (used by ntv, NYI)
     kicker = scrapy.Field() #second-headline
     headline = scrapy.Field() 
     named_references = scrapy.Field() #dict: term´s that references to another article
@@ -22,4 +22,5 @@ class NewsCollectorItem(scrapy.Item):
     text = scrapy.Field()
     tags = scrapy.Field() #list: ntv uses tags to describe the content of an article
     category = scrapy.Field() #politics, sports, economy, etc 
+    subheadlines = scrapy.Field() #lost of subtitles (inside the text)
     raw = scrapy.Field() #raw html data of webpage

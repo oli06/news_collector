@@ -9,7 +9,7 @@ class SpiegelSpider(bs.BaseSpider):
     name = "spiegel"
 
     def __init__(self):
-        super().__init__(self.name, 200, "https://www.spiegel.de/", ['backstage', 'extras'])
+        super().__init__(self.name, 500, "https://www.spiegel.de/", ['backstage', 'extras'])
         
     def start_requests(self):
         allowed_domains = ['www.spiegel.de/']

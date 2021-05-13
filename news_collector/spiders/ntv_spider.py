@@ -9,7 +9,7 @@ class NtvSpider(bs.BaseSpider):
     name = "n-tv"
 
     def __init__(self):
-        super().__init__(self.name, 200, "https://www.n-tv.de/", ['mediathek'])
+        super().__init__(self.name, 500, "https://www.n-tv.de/", ['mediathek'])
 
     def start_requests(self):
         urls = [
