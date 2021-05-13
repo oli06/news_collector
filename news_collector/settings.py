@@ -20,6 +20,7 @@ MONGODB_PORT = 27017
 MONGODB_DB = "news"
 MONGODB_COLLECTION = "articles"
 LOG_LEVEL='INFO'
+STORE_METADATA=False #if set to False, metadata collection wont be filled with the plain html of an article
 #defines all  news pages that can currently be processed
 #dont add '/' at the end
 WHITELIST = [

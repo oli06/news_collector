@@ -7,16 +7,18 @@
 
 
 from pymongo import MongoClient
+from scrapy import settings
 
 
 class MongoDbPipeline(object):
-    def __init__(self, mongo_server, mongo_port, mongo_db, mongo_collection, mongo_user, mongo_password):
+    def __init__(self, mongo_server, mongo_port, mongo_db, mongo_collection, mongo_user, mongo_password, store_metadata):
         self.mongo_server = mongo_server
         self.mongo_port = mongo_port
         self.mongo_db = mongo_db
         self.mongo_collection = mongo_collection
         self.mongo_user = mongo_user
         self.mongo_password = mongo_password
+        self.store_metadata = store_metadata
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -26,7 +28,8 @@ class MongoDbPipeline(object):
             mongo_db=crawler.settings.get('MONGODB_DB'), 
             mongo_collection=crawler.settings.get('MONGODB_COLLECTION'),
             mongo_user=crawler.settings.get('MONGODB_USER', None),
-            mongo_password=crawler.settings.get('MONGODB_PASSWORD', None)
+            mongo_password=crawler.settings.get('MONGODB_PASSWORD', None),
+            store_metadata=crawler.settings.get("STORE_METADATA", False)
         )
 
     def open_spider(self, spider):
@@ -53,9 +56,11 @@ class MongoDbPipeline(object):
         if not valid:
             return item
 
-        metadata = {'raw': item.pop('raw'), 'url': item['url']}    
         _id = self.db[self.mongo_collection].insert_one(dict(item))
-        metadata['ref_id'] = _id.inserted_id
-        self.db['metadata'].insert_one(dict(metadata))
+
+        if self.store_metadata:
+            metadata = {'raw': item.pop('raw'), 'url': item['url']}    
+            metadata['ref_id'] = _id.inserted_id
+            self.db['metadata'].insert_one(dict(metadata))
 
         return item
