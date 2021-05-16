@@ -1,6 +1,8 @@
 import scrapy
 import logging
-import datetime 
+import datetime
+
+from scrapy.utils.url import add_http_if_no_scheme 
 from news_collector.items import NewsCollectorItem
 import news_collector.spiders.base_spider as bs
 
@@ -9,7 +11,7 @@ class SpiegelSpider(bs.BaseSpider):
     name = "spiegel"
 
     def __init__(self):
-        super().__init__(self.name, 500, "https://www.spiegel.de/", ['backstage', 'extras'])
+        super().__init__(self.name, 2000, "https://www.spiegel.de/", ['nutzungsbedingungen', 'backstage', 'datenschutz-spiegel', 'how-we-deal-with-your-data', 'services', 'datenschutz', 'extras', 'impressum', 'extra'])
         
     def start_requests(self):
         allowed_domains = ['www.spiegel.de/']
@@ -22,7 +24,7 @@ class SpiegelSpider(bs.BaseSpider):
     def start_requests2(self):
         allowed_domains = ['www.spiegel.de/']
         urls = [
-            #'https://www.spiegel.de/politik/deutschland/corona-und-die-gesellschaft-zersplitterte-normalitaet-a-0efb9a97-7cbb-442e-b25e-fdaa95bf7874'
+            'https://www.spiegel.de/politik/deutschland/corona-und-die-gesellschaft-zersplitterte-normalitaet-a-0efb9a97-7cbb-442e-b25e-fdaa95bf7874'
 
             # noch zu testen: (siehe todos)
             # 'https://www.spiegel.de/politik/ausland/oesterreich-sebastian-kurz-regiert-mit-den-gruenen-in-wien-a-1303414.html'
@@ -33,13 +35,15 @@ class SpiegelSpider(bs.BaseSpider):
 
     def parse(self, response):
         main_section = response.css(
-            'html body main section[data-area="block>topic"]')
+            'html body main')
 
-        for article in main_section.xpath('.//article'):
-            href = article.css('header a::attr(href)').get()
-
-            yield response.follow(href, callback=self.parseArticle)
-
+        block_topics = main_section.xpath('//*[starts-with(@data-area, "block>topic")]')
+        
+        for block in block_topics:
+            for article in block.xpath('.//article'):
+                href = article.css('header a::attr(href)').get()
+                yield response.follow(href, callback=self.parseArticle)
+            
     def parseArticle(self, response):
         url = response.request.url
 
@@ -59,7 +63,7 @@ class SpiegelSpider(bs.BaseSpider):
 
         #create item and add values
         article_item = NewsCollectorItem()
-        article_item['raw'] = response.body.decode('utf-8')
+        # article_item['raw'] = response.body.decode('utf-8')
         article_item['date'] = article.css('header time.timeformat::attr(datetime)').get()
         article_item['url'] = url
         article_item['authors'] = [a.strip('\n') for a in article.xpath('//header/div/div/div[2]/a/text()').extract()]
@@ -83,7 +87,7 @@ class SpiegelSpider(bs.BaseSpider):
             for c in content:
                 c = c.get().strip('\n')
 
-                if c is not '' and c != 'icon: der spiegel':  # spiegel texts end with S - icon
+                if c != '' and c != 'icon: der spiegel':  # spiegel texts end with S - icon
                     article_item['text'] += c
             for l in links:
                 href = l.css('::attr(href)').get()
