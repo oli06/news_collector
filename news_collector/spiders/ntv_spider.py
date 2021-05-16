@@ -9,7 +9,7 @@ class NtvSpider(bs.BaseSpider):
     name = "n-tv"
 
     def __init__(self):
-        super().__init__(self.name, 500, "https://www.n-tv.de/", ['mediathek'])
+        super().__init__(self.name, 2000, "https://www.n-tv.de/", ['mediathek'])
 
     def start_requests(self):
         urls = [
@@ -30,20 +30,12 @@ class NtvSpider(bs.BaseSpider):
     def parse(self, response):
         # n-tv.de
         content = response.xpath(
-            '//body/div[@class="metawrapper"]/div[@class="container sitewrapper"]/div[@class="row "]/div')
+            '//body/div[@class="metawrapper"]/div[@class="container sitewrapper"]')
 
-        top_news = content.xpath(
-            '//div[@class="content "]/section[@class="group"]/article')  # NACHRICHTEN
-
-        for article in top_news:
-            content = article.xpath('.//div[@class="teaser__content"]')
-            href = content.css('div.teaser__content a::attr(href)').get()
-
+        
+        for article in content.xpath('.//a'):
+            href = article.xpath("@href").get()
             yield response.follow(href, callback=self.parseArticle)
-
-        most_read = content.xpath('//section[@class="list--numbered"]/ul/li/a')
-        for a in most_read:
-            yield response.follow(a, callback=self.parseArticle)
 
     def parseArticle(self, response):
         article = response.xpath('//article[@class="article"]')
@@ -65,7 +57,7 @@ class NtvSpider(bs.BaseSpider):
 
         #create item and add values
         article_item = NewsCollectorItem()
-        article_item['raw'] = response.body.decode('utf-8')
+        # article_item['raw'] = response.body.decode('utf-8')
         article_item['date'] = header.css('span.article__date::text').get()
         article_item['url'] = url
         article_item['agency'] = self.name
