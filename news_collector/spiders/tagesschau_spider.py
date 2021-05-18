@@ -2,6 +2,8 @@
 import scrapy
 import logging
 import datetime
+
+from twisted.internet.defer import inlineCallbacks
 from news_collector.items import NewsCollectorItem
 import news_collector.spiders.base_spider as bs
 
@@ -10,24 +12,40 @@ class TagesschauSpider(bs.BaseSpider):
     name = "tagesschau"
 
     def __init__(self):
-        super().__init__(self.name, 500, "https://www.tagesschau.de/", ['multimedia', '100sekunden', 'regional', 'thema'])
-
-    def start_requests(self):
-        urls = [
-            "https://www.tagesschau.de/"
-        ]
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.parse)
+        super().__init__(self.name, 2000, "https://www.tagesschau.de/", ['multimedia', '100sekunden', 'wetter', 'regional', 'thema'])
 
     def start_requests2(self):
         urls = [
-            'https://www.tagesschau.de/inland/bundeskabinett-klimaschutzgesetz-101.html'
+            "https://www.tagesschau.de/"
+        ]
+        #there is a navigation bar, we want to parse all subpages from the navigation bar
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parseNavigationBar)
+
+        #and we want to parse the urls itself for articles
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse)
+
+    def start_requests(self):
+        urls = [
+            #this throws an exception 
+            'https://www.tagesschau.de/wirtschaft/unternehmen/deutsche-flugsicherung-corona-krise-101.html' 
         ]
 
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parseArticle)
 
+    def parseNavigationBar(self, response):
+        print('parsing navbar for ', response)
+        sub_nav_bar_links = response.xpath('//header/nav[@aria-label="Subnavigation"]//a')
+        for a in sub_nav_bar_links:
+            #we want to parse the navigation bar on this page (there could be sub navigations, e.g. ausland->europa or ausland->amerika)
+            yield response.follow(a, callback=self.parseNavigationBar) 
+            #and we want to parse this page itself (using the parse function)
+            yield response.follow(a, callback=self.parse)
+                
     def parse(self, response):
+        print('page parsing ', response)
         for section in response.css("div.container div.teasergroup"):
             for a in section.css('a'):
                 yield response.follow(a, callback=self.parseArticle)
@@ -45,7 +63,7 @@ class TagesschauSpider(bs.BaseSpider):
             return
 
         self.total_parsed += 1
-        logging.info(f"{self.total_parsed}. {url}")
+        logging.debug(f"{self.total_parsed}. {url}")
 
         article = response.css('article.container')
         header = article.css('div.meldungskopf')
@@ -53,7 +71,7 @@ class TagesschauSpider(bs.BaseSpider):
 
         #create item and add values
         article_item = NewsCollectorItem()
-        article_item['raw'] = response.body.decode('utf-8')
+        # article_item['raw'] = response.body.decode('utf-8')
         # article_item['headline'] = header.css('div.meldungskopf__title span.meldungskopf__headline--text::text').get().strip('\n').strip()
 
         article_item["headline"] = ""
@@ -88,13 +106,11 @@ class TagesschauSpider(bs.BaseSpider):
 
         text_refs = content.xpath('//*[contains(@class, "textabsatz")]/a')
         for ref in text_refs:
-            href = ref.xpath("@href").get()
-            article_item['named_references'][ref.xpath("text()").get().strip().strip('\n').strip().replace('.', '%2E') if ref.xpath("text()").get() is not None else 'unknown_' + href.replace('.', '%2E')] = href
+            href = ref.xpath("@href").get() #there are a tags without a href
+            if href is not None:
+                article_item['named_references'][ref.xpath('text()').get().strip('\n').replace('.', '%2E') if ref.xpath('text()').get() is not None else 'unknown_' + href.replace('.', '%2E')] = href
 
-        for x in article_item['named_references']:
-            # print("now parsing: x: " + x + " and link is: " + article_item['named_references'][x])
-            ref_url = article_item['named_references'][x]
-            
+        for x in article_item['named_references']:   
             yield response.follow(article_item['named_references'][x], callback=self.parseArticle)
 
         article_item['text'] = article_item['text'].strip()
