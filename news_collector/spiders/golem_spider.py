@@ -8,7 +8,7 @@ class GolemSpider(bs.BaseSpider):
     name = "golem"
 
     def __init__(self):
-        super().__init__(self.name, 500, "https://www.golem.de/", ['specials'])
+        super().__init__(self.name, 2000, "https://www.golem.de/", ['specials'])
 
     def start_requests(self):
         urls = [
@@ -44,11 +44,11 @@ class GolemSpider(bs.BaseSpider):
             return
         
         self.total_parsed += 1
-        logging.info(f"{self.total_parsed}. {url}")
+        logging.debug(f"{self.total_parsed}. {url}")
 
         # create item and add values
         article_item = NewsCollectorItem()
-        article_item['raw'] = response.body.decode('utf-8')
+        # article_item['raw'] = response.body.decode('utf-8')
         article_item['headline'] = article.css('header h1 span.dh1::text').get()
         article_item['kicker'] = article.css('header h1 span.dh2::text').get()
         article_item['category'] = '' #golem does not use categories

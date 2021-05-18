@@ -15,13 +15,13 @@ class BaseSpider(scrapy.Spider):
     def __init__(self, name, max, tld, ignore_dirs):
         dispatcher.connect(self.spider_closed, signals.spider_closed)
         self.name = name
-        self.max = max or math.inf
+        self.max = max or 10000
         self.tld = tld
         self.ignore_dirs = ignore_dirs or []
         log_init(self)
 
     def spider_closed(self, spider):
-        logging.info(f'total parsed: {self.total_parsed}')
+        logging.debug(f'total parsed: {self.total_parsed}')
 
     def can_process(self, response, url):
         if self.total_parsed >= self.max:
@@ -45,8 +45,7 @@ class BaseSpider(scrapy.Spider):
             self.urls_parsed.append(url)
 
         return True
-
-
+                
 def log_init(spider):
     date = datetime.datetime.now()
     now = date.strftime('%Y-%m-%d-%H-%M-%S')

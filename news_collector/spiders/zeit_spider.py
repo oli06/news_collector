@@ -9,7 +9,7 @@ class ZeitSpider(bs.BaseSpider):
     name = "zeit"
 
     def __init__(self):
-        super().__init__(self.name, 500, "https://www.zeit.de/", ['thema', 'autoren', 'suche'])
+        super().__init__(self.name, 2000, "https://www.zeit.de/", ['thema', 'autoren', 'suche'])
 
     def start_requests(self):
         urls = [
@@ -21,7 +21,8 @@ class ZeitSpider(bs.BaseSpider):
 
     def start_requests2(self):
         urls = [
-            'https://www.zeit.de/wissen/gesundheit/coronavirus-echtzeit-karte-deutschland-landkreise-infektionen-ausbreitung'
+            'https://www.zeit.de/gesellschaft/zeitgeschehen/2010-12/sarrazin-integration-rueckblick'
+            # 'https://www.zeit.de/wissen/gesundheit/coronavirus-echtzeit-karte-deutschland-landkreise-infektionen-ausbreitung'
             #'https://www.zeit.de/sport/2020-05/bundesliga-start-fussball-spiele-coronavirus-manager-fans' # pagination test
         
         ]
@@ -49,13 +50,13 @@ class ZeitSpider(bs.BaseSpider):
             return
 
         self.total_parsed += 1
-        logging.info(f"{self.total_parsed}. {url}")
+        logging.debug(f"{self.total_parsed}. {url}")
 
         footer = article.css('div.article-footer')
 
         # create item and add values
         article_item = NewsCollectorItem()
-        article_item['raw'] = response.body.decode('utf-8')
+        # article_item['raw'] = response.body.decode('utf-8')
         # what if there is no link or no tags :: TODO
         article_item['tags'] = footer.css('nav.article-tags ul.article-tags__list li a::text').extract()
         article_item['kicker'] = article.xpath('.//h1[contains(@class, "article-heading") or contains(@class, "heading__headline")]/span[contains(@class, "article-heading")]/text()').get().strip('\n').strip()

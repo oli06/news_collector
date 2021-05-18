@@ -57,7 +57,7 @@ class SpiegelSpider(bs.BaseSpider):
             return
 
         self.total_parsed += 1
-        logging.info(f"{self.total_parsed}. {url}")
+        logging.debug(f"{self.total_parsed}. {url}")
 
         article = response.xpath('//html/body/div/div/div/main/article')
 

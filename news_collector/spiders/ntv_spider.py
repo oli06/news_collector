@@ -49,7 +49,7 @@ class NtvSpider(bs.BaseSpider):
             return
 
         self.total_parsed += 1
-        logging.info(f"{self.total_parsed}. {url}")
+        logging.debug(f"{self.total_parsed}. {url}")
 
         article_wrapper = article.css('div.article__wrapper')
         header = article_wrapper.css('div.article__header')
