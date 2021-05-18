@@ -14,7 +14,7 @@ class TagesschauSpider(bs.BaseSpider):
     def __init__(self):
         super().__init__(self.name, 2000, "https://www.tagesschau.de/", ['multimedia', '100sekunden', 'wetter', 'regional', 'thema'])
 
-    def start_requests2(self):
+    def start_requests(self):
         urls = [
             "https://www.tagesschau.de/"
         ]
@@ -26,7 +26,7 @@ class TagesschauSpider(bs.BaseSpider):
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)
 
-    def start_requests(self):
+    def start_requests2(self):
         urls = [
             #this throws an exception 
             'https://www.tagesschau.de/wirtschaft/unternehmen/deutsche-flugsicherung-corona-krise-101.html' 
