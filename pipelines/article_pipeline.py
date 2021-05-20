@@ -23,10 +23,7 @@ class ArticlePipeline(object):
 
                 item[attr] = date.timestamp()
             elif attr == 'authors':
-                for a in item[attr]:
-                    #TODO: use regex
-                    if a.startswith('Von ') or a.startswith('von ') or a.startswith('und ') or a.startswith('Und '):
-                        a = a[4:]
+                item[attr] = [stripString(a) for a in item[attr] if not stripString(a)]
             elif attr == 'raw':
                 pass #dont do anything
             elif type(item[attr]) == type(''):
@@ -41,4 +38,16 @@ def getLocalizedMonth(date_string, format_string, locale_value):
     locale.setlocale(locale.LC_ALL, locale.getdefaultlocale())
 
     return date
-     
+
+def stripString(s):
+    if s.startswith('\n') or s.endswith('\n'):
+        return stripString(s.strip('\n'))
+    if s.startswith('\t') or s.endswith('\t'):
+        return stripString(s.strip('\t'))
+    if s.startswith('Von ') or s.startswith('von '):
+        return stripString(s[4:])
+    if s.startswith('und ') or s.startswith('Und '):
+        return stripString(s[4:])
+
+    return s.strip()
+        
