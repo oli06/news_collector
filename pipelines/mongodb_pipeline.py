@@ -33,8 +33,7 @@ class MongoDbPipeline(object):
             mongo_user=crawler.settings.get('MONGODB_USER', None),
             mongo_password=crawler.settings.get('MONGODB_PASSWORD', None),
             store_metadata=crawler.settings.get("STORE_METADATA", False),
-            STORE_AUTHORS=crawler.settings.get("STORE_AUTHORS", False)
-
+            store_authors=crawler.settings.get("STORE_AUTHORS", False)
         )
 
     def open_spider(self, spider):
@@ -63,7 +62,7 @@ class MongoDbPipeline(object):
                 a_exists = self.db[self.authors_collection].find_one({'author': a, 'agency': item['agency']})
                 if not exists:
                     #create new author
-                    author_ids.append(self.db[self.authors_collection].insert_one({'author': a, 'agency': item['agency']}))
+                    author_ids.append(self.db[self.authors_collection].insert_one({'author': a, 'agency': item['agency']}).inserted_id)
                 else:
                     a_exists.get('_id')
 

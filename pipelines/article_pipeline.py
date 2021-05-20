@@ -23,7 +23,7 @@ class ArticlePipeline(object):
 
                 item[attr] = date.timestamp()
             elif attr == 'authors':
-                item[attr] = [stripString(a) for a in item[attr] if not stripString(a)]
+                item[attr] = [stripString(a) for a in item[attr] if stripString(a)]
             elif attr == 'raw':
                 pass #dont do anything
             elif type(item[attr]) == type(''):
