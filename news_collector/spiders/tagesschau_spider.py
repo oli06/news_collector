@@ -29,8 +29,7 @@ class TagesschauSpider(bs.BaseSpider):
     def start_requests2(self):
         urls = [
             #this throws an exception 
-            'https://www.tagesschau.de/wirtschaft/unternehmen/deutsche-flugsicherung-corona-krise-101.html' 
-        ]
+'https://www.tagesschau.de/inland/innenpolitik/soeder-gruen-103.html'        ]
 
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parseArticle)
@@ -90,7 +89,13 @@ class TagesschauSpider(bs.BaseSpider):
         article_item['named_references'] = {}
         article_item['text'] = ""
         article_item['teaser'] = ""
-        
+
+        article_item['authors'] = []
+        authors = content.xpath('//span[@class="autorenzeile__autor"]/text()')
+        for a in authors:
+            if a:
+                article_item['authors'].append(a.get().strip().strip(','))
+
         article_item['tags'] = []
         for tag in content.css("div.meldungsfooter ul.taglist li.taglist__element a::text"):
             article_item['tags'].append(tag.get())
