@@ -35,7 +35,6 @@ class TagesschauSpider(bs.BaseSpider):
             yield scrapy.Request(url=url, callback=self.parseArticle)
 
     def parseNavigationBar(self, response):
-        print('parsing navbar for ', response)
         sub_nav_bar_links = response.xpath('//header/nav[@aria-label="Subnavigation"]//a')
         for a in sub_nav_bar_links:
             #we want to parse the navigation bar on this page (there could be sub navigations, e.g. ausland->europa or ausland->amerika)
@@ -44,7 +43,6 @@ class TagesschauSpider(bs.BaseSpider):
             yield response.follow(a, callback=self.parse)
                 
     def parse(self, response):
-        print('page parsing ', response)
         for section in response.css("div.container div.teasergroup"):
             for a in section.css('a'):
                 yield response.follow(a, callback=self.parseArticle)
